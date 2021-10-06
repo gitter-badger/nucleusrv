@@ -18,7 +18,8 @@ class Top(/*val req:AbstrRequest, val rsp:AbstrResponse,val instrAdapter:Module,
 
   // TODO: Make RAMs generic
   val imemCtrl = Module(BlockRam.createNonMaskableRAM(programFile, config, 1024))
-  val dmemCtrl = Module(BlockRam.createMaskableRAM(config, 1024))
+  // val dmemCtrl = Module(BlockRam.createMaskableRAM(config, 1024))
+  val sramCtrl = Module(new MemoryWrapper(new WBRequest, new WBResponse))
 
   /*  Imem Interceonnections  */
   imemAdapter.io.reqIn <> core.io.imemReq
@@ -29,8 +30,11 @@ class Top(/*val req:AbstrRequest, val rsp:AbstrResponse,val instrAdapter:Module,
   /*  Dmem Interconnections  */
   dmemAdapter.io.reqIn <> core.io.dmemReq
   core.io.dmemRsp <> dmemAdapter.io.rspOut
-  dmemCtrl.io.req <> dmemAdapter.io.reqOut
-  dmemAdapter.io.rspIn <> dmemCtrl.io.rsp
+  // dmemCtrl.io.req <> dmemAdapter.io.reqOut
+  // dmemAdapter.io.rspIn <> dmemCtrl.io.rsp
+
+  sramCtrl.io.request <> dmemAdapter.io.reqOut
+  dmemAdapter.io.rspIn <> sramCtrl.io.response
 
 //  core.io.imem <> imem.io
 //  core.io.dmem <> dmem.io

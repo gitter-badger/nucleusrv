@@ -20,22 +20,22 @@ class MemoryWrapper(val req:AbstrRequest, val rsp:AbstrResponse)(implicit val co
     // val csb0 = Input(Bool())
 
     // for sending request
-    when(io.request.fire() & io.request.bits.isWrite){                                      
-        val maskedData = io.request.bits.dataRequest.asTypeOf(Vec(4, UInt(8.W)))        
-        data := io.request.bits.activeByteLane.asBools zip maskedData map {                  
-            case (b:Bool, i:UInt) => Mux(b, i, 0.U)
-        }
+    when(io.request.valid & io.request.bits.isWrite){                                      
+        // val maskedData = io.request.bits.dataRequest.asTypeOf(Vec(4, UInt(8.W)))        
+        // data := io.request.bits.activeByteLane.asBools zip maskedData map {                  
+        //     case (b:Bool, i:UInt) => Mux(b, i, 0.U)
+        // }
 
         // feed these pins into the BLACK BOX of SRAM/Peripheral
-        mem.io.din0 := data.asUInt                     // ye data hy 
+        mem.io.din0 := io.request.bits.dataRequest                   // ye data hy 
         mem.io.addr0 := io.request.bits.addrRequest     // ye address hay
         mem.io.web0 := ~io.request.bits.isWrite         // ye write enable hy
         mem.io.csb0 := 1.B
 
-    }.elsewhen(io.request.fire() & ~io.request.bits.isWrite){                                // if req is of read
+    }.elsewhen(io.request.valid & ~io.request.bits.isWrite){                                // if req is of read
         
-        mem.io.din0 := io.request.bits.addrRequest     // ye address hy
-        mem.io.addr0 := io.request.bits.dataRequest     // ye data hy, but kisi kaam ka nahi
+        mem.io.addr0 := io.request.bits.addrRequest     // ye address hy
+        mem.io.din0 := io.request.bits.dataRequest     // ye data hy, but kisi kaam ka nahi
         mem.io.web0 := ~io.request.bits.isWrite         // ye write enable h, low hga read k lye
         mem.io.csb0 := 1.B
 
@@ -48,6 +48,8 @@ class MemoryWrapper(val req:AbstrRequest, val rsp:AbstrResponse)(implicit val co
         
 
     }
+
+    // mem.io.din0 := io.request.bits.dataRequest 
 
     // For recieveing response
     val responseData =  mem.io.dout0                // yahan data phek do, response se any wala
